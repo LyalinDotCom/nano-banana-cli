@@ -1,0 +1,21 @@
+# Binaries
+nanobanana
+nanobanana.exe
+dist/
+
+# Environment
+.env
+.env.*
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Test output
+*.test
+coverage.out
