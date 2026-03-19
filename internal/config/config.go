@@ -16,8 +16,8 @@ type Config struct {
 	OutputDir string        `mapstructure:"output_dir"`
 }
 
-// DefaultModel is the default Gemini model for image generation
-const DefaultModel = "gemini-2.5-flash-image-preview"
+// DefaultModel is the default Gemini model for image generation.
+const DefaultModel = "gemini-3.1-flash-image-preview"
 
 // ProModel is the higher quality Gemini 3 Pro model
 const ProModel = "gemini-3-pro-image-preview"
@@ -78,8 +78,10 @@ func GetAPIKey() string {
 // ResolveModel converts short model names to full model IDs
 func ResolveModel(model string) string {
 	switch model {
-	case "flash", "":
+	case "", "banana2", "3.1":
 		return DefaultModel
+	case "banana", "2.5":
+		return "gemini-2.5-flash-image"
 	case "pro":
 		return ProModel
 	default:

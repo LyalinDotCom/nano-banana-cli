@@ -1,15 +1,17 @@
 package cli
 
 import (
+	"fmt"
 	"os"
+	"strings"
 
 	"github.com/joho/godotenv"
+	"github.com/lyalindotcom/nano-banana-cli/internal/gemini"
 	"github.com/lyalindotcom/nano-banana-cli/internal/output"
 	"github.com/spf13/cobra"
 )
 
 var (
-	// Global flags
 	apiKey   string
 	model    string
 	jsonMode bool
@@ -17,10 +19,8 @@ var (
 	verbose  bool
 	noColor  bool
 
-	// Formatter for output
 	formatter *output.Formatter
 
-	// Root command
 	rootCmd = &cobra.Command{
 		Use:   "nanobanana",
 		Short: "AI-powered image generation and manipulation CLI",
@@ -28,8 +28,10 @@ var (
 using Google's Gemini image generation models.
 
 CAPABILITIES:
-  - Text-to-image generation with various aspect ratios
-  - Image editing using natural language instructions
+  - Text-to-image and image editing with multiple reference images
+  - Script-friendly multi-turn image workflows via history files
+  - Grounding with Google Search on supported Gemini image models
+  - Optional thought output for Gemini 3 image generation
   - Icon generation in multiple sizes
   - Seamless pattern and texture generation
   - Image manipulation: resize, crop, rotate, flip
@@ -37,8 +39,9 @@ CAPABILITIES:
   - Image combining: horizontal strips, vertical strips, grids
 
 MODELS:
-  - flash (default): Gemini 2.5 Flash - Fast, optimized for high-volume tasks
-  - pro: Gemini 3 Pro - Professional quality, supports 4K resolution
+  - banana2 (default): Gemini 3.1 Flash Image Preview
+  - banana / 2.5: Gemini 2.5 Flash Image
+  - pro: Gemini 3 Pro Image Preview
 
 AUTHENTICATION:
   Set your Gemini API key via:
@@ -50,31 +53,30 @@ OUTPUT:
   All commands support --json flag for programmatic parsing.
 
 EXAMPLES:
+  # Print the full manual for all commands
+  nanobanana docs
+
   # Generate an image
   nanobanana generate "a robot playing guitar" -o robot.png
 
   # Edit an existing image
   nanobanana generate "make it look like watercolor" -i photo.jpg -o watercolor.png
 
-  # Generate app icons in multiple sizes
-  nanobanana icon "coffee cup logo" -o ./icons/ --sizes 64,128,256,512
+  # Generate with Pro at 4K
+  nanobanana generate "designer perfume bottle" -m pro --image-size 4K -o bottle.png
 
-  # Remove background from image
-  nanobanana transparent make sprite.png -o sprite-clean.png
-
-  # Resize an image
-  nanobanana transform image.png -o thumb.png --resize 200x200
+  # Ground with Google Search
+  nanobanana generate "five day weather poster for NYC" --ground-web -o weather.png
 
 For detailed help on any command:
-  nanobanana [command] --help`,
-		PersistentPreRun: func(cmd *cobra.Command, args []string) {
-			// Load .env file if present
-			godotenv.Load()
+  nanobanana [command] --help
 
-			// Initialize formatter
+For a single-command manual covering the whole CLI:
+  nanobanana docs`,
+		PersistentPreRun: func(cmd *cobra.Command, args []string) {
+			godotenv.Load()
 			formatter = output.NewFormatter(jsonMode, quiet, noColor)
 
-			// Get API key from flag or environment
 			if apiKey == "" {
 				apiKey = os.Getenv("GEMINI_API_KEY")
 			}
@@ -84,45 +86,45 @@ For detailed help on any command:
 			if apiKey == "" {
 				apiKey = os.Getenv("GOOGLE_API_KEY")
 			}
+
 		},
 	}
 )
 
 func init() {
-	// Global flags
 	rootCmd.PersistentFlags().StringVar(&apiKey, "api-key", "", "Gemini API key (or set GEMINI_API_KEY env var)")
-	rootCmd.PersistentFlags().StringVarP(&model, "model", "m", "flash", "Model: flash (default), pro")
+	rootCmd.PersistentFlags().StringVarP(
+		&model,
+		"model",
+		"m",
+		"banana2",
+		fmt.Sprintf("Model alias or full model ID. Aliases: %s", strings.Join(gemini.ListModelAliases(), "; ")),
+	)
 	rootCmd.PersistentFlags().BoolVar(&jsonMode, "json", false, "Output in JSON format")
 	rootCmd.PersistentFlags().BoolVarP(&quiet, "quiet", "q", false, "Suppress non-essential output")
 	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "Verbose output")
 	rootCmd.PersistentFlags().BoolVar(&noColor, "no-color", false, "Disable colored output")
 
-	// Add subcommands
 	rootCmd.AddCommand(generateCmd)
 	rootCmd.AddCommand(versionCmd)
 }
 
-// Execute runs the root command
 func Execute() error {
 	return rootCmd.Execute()
 }
 
-// GetAPIKey returns the configured API key
 func GetAPIKey() string {
 	return apiKey
 }
 
-// GetModel returns the configured model
 func GetModel() string {
 	return model
 }
 
-// GetFormatter returns the output formatter
 func GetFormatter() *output.Formatter {
 	return formatter
 }
 
-// IsVerbose returns whether verbose mode is enabled
 func IsVerbose() bool {
 	return verbose
 }

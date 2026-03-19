@@ -123,13 +123,12 @@ func runIcon(cmd *cobra.Command, args []string) error {
 	// Build enhanced prompt for icon generation
 	enhancedPrompt := buildIconPrompt(prompt, iconStyle, iconBackground)
 
-	// Create client
-	modelName := gemini.ResolveModelName(GetModel())
-	client, err := gemini.NewClient(apiKey, modelName, 2*time.Minute)
+	client, err := gemini.NewClient(apiKey, GetModel(), 2*time.Minute)
 	if err != nil {
 		f.Error("icon", "CLIENT_ERROR", err.Error(), "Check your API key")
 		return err
 	}
+	modelInfo := client.Model()
 
 	// Generate base icon at largest size
 	largestSize := iconSizes[0]
@@ -139,15 +138,13 @@ func runIcon(cmd *cobra.Command, args []string) error {
 		}
 	}
 
-	f.Progress("Generating base icon with %s...", modelName)
+	f.Progress("Generating base icon with %s...", modelInfo.Spec.ID)
 
 	ctx := context.Background()
-	config := &gemini.ImageConfig{
+	result, err := client.Generate(ctx, enhancedPrompt, &gemini.GenerateOptions{
 		AspectRatio: "1:1",
 		Count:       1,
-	}
-
-	images, err := client.GenerateImage(ctx, enhancedPrompt, config)
+	})
 	if err != nil {
 		if geminiErr, ok := err.(*gemini.GeminiError); ok {
 			f.Error("icon", geminiErr.Code, geminiErr.Message, "")
@@ -157,7 +154,7 @@ func runIcon(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	if len(images) == 0 {
+	if len(result.Images) == 0 {
 		f.Error("icon", "NO_IMAGE", "No image was generated", "Try rephrasing your prompt")
 		return fmt.Errorf("no image generated")
 	}
@@ -188,7 +185,7 @@ func runIcon(cmd *cobra.Command, args []string) error {
 
 	// Save base image to temp location
 	tempFile := filepath.Join(outputDir, "_temp_base.png")
-	if err := client.SaveImage(images[0], tempFile); err != nil {
+	if err := client.SaveImage(result.Images[0], tempFile); err != nil {
 		f.Error("icon", "SAVE_FAILED", err.Error(), "")
 		return err
 	}
@@ -232,7 +229,7 @@ func runIcon(cmd *cobra.Command, args []string) error {
 
 	data := map[string]interface{}{
 		"prompt": prompt,
-		"model":  modelName,
+		"model":  modelInfo.Spec.ID,
 		"style":  iconStyle,
 		"sizes":  iconSizes,
 		"images": results,

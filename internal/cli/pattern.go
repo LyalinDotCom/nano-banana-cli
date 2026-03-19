@@ -151,15 +151,14 @@ func runPattern(cmd *cobra.Command, args []string) error {
 	// Build enhanced prompt for pattern generation
 	enhancedPrompt := buildPatternPrompt(prompt, patternType, patternStyle)
 
-	// Create client
-	modelName := gemini.ResolveModelName(GetModel())
-	client, err := gemini.NewClient(apiKey, modelName, 2*time.Minute)
+	client, err := gemini.NewClient(apiKey, GetModel(), 2*time.Minute)
 	if err != nil {
 		f.Error("pattern", "CLIENT_ERROR", err.Error(), "Check your API key")
 		return err
 	}
+	modelInfo := client.Model()
 
-	f.Progress("Generating %s pattern with %s...", patternType, modelName)
+	f.Progress("Generating %s pattern with %s...", patternType, modelInfo.Spec.ID)
 
 	ctx := context.Background()
 
@@ -179,12 +178,10 @@ func runPattern(cmd *cobra.Command, args []string) error {
 		}
 	}
 
-	config := &gemini.ImageConfig{
+	result, err := client.Generate(ctx, enhancedPrompt, &gemini.GenerateOptions{
 		AspectRatio: aspectRatio,
 		Count:       1,
-	}
-
-	images, err := client.GenerateImage(ctx, enhancedPrompt, config)
+	})
 	if err != nil {
 		if geminiErr, ok := err.(*gemini.GeminiError); ok {
 			f.Error("pattern", geminiErr.Code, geminiErr.Message, "")
@@ -194,13 +191,13 @@ func runPattern(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	if len(images) == 0 {
+	if len(result.Images) == 0 {
 		f.Error("pattern", "NO_IMAGE", "No pattern was generated", "Try rephrasing your prompt")
 		return fmt.Errorf("no image generated")
 	}
 
 	// Save the pattern
-	if err := client.SaveImage(images[0], patternOutput); err != nil {
+	if err := client.SaveImage(result.Images[0], patternOutput); err != nil {
 		f.Error("pattern", "SAVE_FAILED", err.Error(), "")
 		return err
 	}
@@ -215,7 +212,7 @@ func runPattern(cmd *cobra.Command, args []string) error {
 
 	data := map[string]interface{}{
 		"prompt": prompt,
-		"model":  modelName,
+		"model":  modelInfo.Spec.ID,
 		"type":   patternType,
 		"style":  patternStyle,
 		"size":   patternSize,
