@@ -15,8 +15,23 @@ Discovery:
 
 Authentication:
   Gemini-backed commands require an API key.
+  Recommended: nanobanana config set-api-key
   Supported env vars: GEMINI_API_KEY, NANOBANANA_API_KEY, GOOGLE_API_KEY
   Default model: banana2 (Gemini 3.1 Flash Image Preview)
+
+Installation and first run:
+  Recommended from a clone:
+    cd nano-banana-cli
+    make build
+    ./nanobanana config set-api-key
+    ./nanobanana docs
+    ./nanobanana generate "a robot playing guitar" -o robot.png
+
+  With go install:
+    go install github.com/lyalindotcom/nano-banana-cli/cmd/nanobanana@latest
+    If "nanobanana" is not found, run:
+      "$(go env GOPATH)/bin/nanobanana" docs
+    Or add "$(go env GOPATH)/bin" to PATH.
 
 Models:
   banana2, 3.1 -> gemini-3.1-flash-image-preview
@@ -115,7 +130,18 @@ Commands:
 8. version
    Print version and build information.
 
-9. docs
+9. config
+   Manage persistent user-level configuration.
+   Subcommands:
+     path
+     show
+     set-api-key [key]
+     clear-api-key
+   Examples:
+     nanobanana config set-api-key
+     nanobanana config show
+
+10. docs
    Print this manual.
 `
 
@@ -140,6 +166,7 @@ var docsCmd = &cobra.Command{
 					"transparent inspect",
 					"combine",
 					"version",
+					"config",
 					"docs",
 				},
 			}, nil)

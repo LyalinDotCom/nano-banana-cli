@@ -1,14 +1,15 @@
 package config
 
 import (
+	"errors"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/spf13/viper"
 )
 
-// Config holds all configuration values
 type Config struct {
 	APIKey    string        `mapstructure:"api_key"`
 	Model     string        `mapstructure:"model"`
@@ -16,53 +17,87 @@ type Config struct {
 	OutputDir string        `mapstructure:"output_dir"`
 }
 
-// DefaultModel is the default Gemini model for image generation.
 const DefaultModel = "gemini-3.1-flash-image-preview"
-
-// ProModel is the higher quality Gemini 3 Pro model
 const ProModel = "gemini-3-pro-image-preview"
-
-// DefaultTimeout for API requests
 const DefaultTimeout = 2 * time.Minute
 
-// Load reads configuration from environment variables and config file
-func Load() (*Config, error) {
-	v := viper.New()
-
-	// Set defaults
-	v.SetDefault("model", DefaultModel)
-	v.SetDefault("timeout", DefaultTimeout)
-	v.SetDefault("output_dir", ".")
-
-	// Environment variables
-	v.SetEnvPrefix("NANOBANANA")
-	v.AutomaticEnv()
-
-	// Bind specific env vars
-	v.BindEnv("api_key", "GEMINI_API_KEY", "NANOBANANA_API_KEY", "GOOGLE_API_KEY")
-	v.BindEnv("model", "NANOBANANA_MODEL")
-
-	// Config file (optional)
-	home, err := os.UserHomeDir()
-	if err == nil {
-		configDir := filepath.Join(home, ".config", "nanobanana")
-		v.AddConfigPath(configDir)
-		v.SetConfigName("config")
-		v.SetConfigType("yaml")
-		v.ReadInConfig() // Ignore error if file doesn't exist
+func ConfigFilePath() (string, error) {
+	if customDir := strings.TrimSpace(os.Getenv("NANOBANANA_CONFIG_DIR")); customDir != "" {
+		return filepath.Join(customDir, "config.yaml"), nil
 	}
+	configDir, err := os.UserConfigDir()
+	if err != nil {
+		return "", err
+	}
+	return filepath.Join(configDir, "nanobanana", "config.yaml"), nil
+}
+
+func Load() (*Config, error) {
+	v := newViper()
 
 	var cfg Config
 	if err := v.Unmarshal(&cfg); err != nil {
 		return nil, err
 	}
-
 	return &cfg, nil
 }
 
-// GetAPIKey returns the API key from config or environment
+func Save(cfg *Config) error {
+	if cfg == nil {
+		return errors.New("config is required")
+	}
+
+	path, err := ConfigFilePath()
+	if err != nil {
+		return err
+	}
+	if err := os.MkdirAll(filepath.Dir(path), 0755); err != nil {
+		return err
+	}
+
+	v := viper.New()
+	v.Set("api_key", cfg.APIKey)
+	v.Set("model", cfg.Model)
+	v.Set("timeout", cfg.Timeout.String())
+	v.Set("output_dir", cfg.OutputDir)
+	v.SetConfigFile(path)
+	v.SetConfigType("yaml")
+	return v.WriteConfigAs(path)
+}
+
+func SetAPIKey(apiKey string) error {
+	apiKey = strings.TrimSpace(apiKey)
+	if apiKey == "" {
+		return errors.New("api key cannot be empty")
+	}
+
+	cfg, err := Load()
+	if err != nil {
+		return err
+	}
+	cfg.APIKey = apiKey
+	if cfg.Model == "" {
+		cfg.Model = DefaultModel
+	}
+	if cfg.Timeout == 0 {
+		cfg.Timeout = DefaultTimeout
+	}
+	if cfg.OutputDir == "" {
+		cfg.OutputDir = "."
+	}
+	return Save(cfg)
+}
+
+func ClearAPIKey() error {
+	cfg, err := Load()
+	if err != nil {
+		return err
+	}
+	cfg.APIKey = ""
+	return Save(cfg)
+}
+
 func GetAPIKey() string {
-	// Check environment variables in order of priority
 	if key := os.Getenv("GEMINI_API_KEY"); key != "" {
 		return key
 	}
@@ -72,10 +107,13 @@ func GetAPIKey() string {
 	if key := os.Getenv("GOOGLE_API_KEY"); key != "" {
 		return key
 	}
+	cfg, err := Load()
+	if err == nil && cfg.APIKey != "" {
+		return cfg.APIKey
+	}
 	return ""
 }
 
-// ResolveModel converts short model names to full model IDs
 func ResolveModel(model string) string {
 	switch model {
 	case "", "banana2", "3.1":
@@ -87,4 +125,24 @@ func ResolveModel(model string) string {
 	default:
 		return model
 	}
+}
+
+func newViper() *viper.Viper {
+	v := viper.New()
+	v.SetDefault("model", DefaultModel)
+	v.SetDefault("timeout", DefaultTimeout)
+	v.SetDefault("output_dir", ".")
+
+	v.SetEnvPrefix("NANOBANANA")
+	v.AutomaticEnv()
+	_ = v.BindEnv("api_key", "GEMINI_API_KEY", "NANOBANANA_API_KEY", "GOOGLE_API_KEY")
+	_ = v.BindEnv("model", "NANOBANANA_MODEL")
+
+	if path, err := ConfigFilePath(); err == nil {
+		v.SetConfigFile(path)
+		v.SetConfigType("yaml")
+		_ = v.ReadInConfig()
+	}
+
+	return v
 }

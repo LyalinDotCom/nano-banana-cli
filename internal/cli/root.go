@@ -2,10 +2,10 @@ package cli
 
 import (
 	"fmt"
-	"os"
 	"strings"
 
 	"github.com/joho/godotenv"
+	appconfig "github.com/lyalindotcom/nano-banana-cli/internal/config"
 	"github.com/lyalindotcom/nano-banana-cli/internal/gemini"
 	"github.com/lyalindotcom/nano-banana-cli/internal/output"
 	"github.com/spf13/cobra"
@@ -45,6 +45,7 @@ MODELS:
 
 AUTHENTICATION:
   Set your Gemini API key via:
+  - User config: nanobanana config set-api-key
   - Environment variable: GEMINI_API_KEY or NANOBANANA_API_KEY
   - Flag: --api-key YOUR_KEY
   - .env file in current directory
@@ -78,13 +79,7 @@ For a single-command manual covering the whole CLI:
 			formatter = output.NewFormatter(jsonMode, quiet, noColor)
 
 			if apiKey == "" {
-				apiKey = os.Getenv("GEMINI_API_KEY")
-			}
-			if apiKey == "" {
-				apiKey = os.Getenv("NANOBANANA_API_KEY")
-			}
-			if apiKey == "" {
-				apiKey = os.Getenv("GOOGLE_API_KEY")
+				apiKey = appconfig.GetAPIKey()
 			}
 
 		},

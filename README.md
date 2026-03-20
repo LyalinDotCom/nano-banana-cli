@@ -16,17 +16,48 @@ AI-powered image generation and manipulation CLI for Gemini image models.
 
 ## Installation
 
-Download a release from [GitHub Releases](https://github.com/lyalindotcom/nano-banana-cli/releases), or build/install from source:
+Use one of these install paths.
+
+### Recommended: clone and build
+
+```bash
+git clone https://github.com/lyalindotcom/nano-banana-cli.git
+cd nano-banana-cli/nano-banana-cli
+make build
+./nanobanana docs
+```
+
+This is the clearest path for contributors, local users, and agents working from the repo.
+
+### Go users: install globally
 
 ```bash
 go install github.com/lyalindotcom/nano-banana-cli/cmd/nanobanana@latest
 ```
 
+After `go install`, the binary is placed in your Go bin directory, usually:
+
+```bash
+$(go env GOPATH)/bin
+```
+
+If `nanobanana` is not found, either run it directly:
+
+```bash
+"$(go env GOPATH)/bin/nanobanana" docs
+```
+
+Or add that directory to your `PATH`.
+
+### Release binary
+
+Download a release from [GitHub Releases](https://github.com/lyalindotcom/nano-banana-cli/releases), make it executable, and run `nanobanana docs`.
+
 ## Quick Start
 
 ```bash
-# Set your API key
-export GEMINI_API_KEY=your-api-key
+# Configure your API key once at the user level
+nanobanana config set-api-key
 
 # See the full manual for every command, key flag, and example
 nanobanana docs
@@ -59,6 +90,12 @@ nanobanana generate "a detailed painting of a Timareta butterfly resting on a fl
   -o butterfly.png
 ```
 
+If you prefer environment variables instead of persistent config:
+
+```bash
+export GEMINI_API_KEY=your-api-key
+```
+
 ## Models
 
 The CLI accepts aliases or raw Google model IDs.
@@ -81,6 +118,28 @@ nanobanana <command> --help
 
 `nanobanana docs` is the single-command manual intended for agents and humans who need the full interface in one place.
 
+## Authentication
+
+Gemini-backed commands require an API key.
+
+Recommended persistent setup:
+
+```bash
+nanobanana config set-api-key
+nanobanana config show
+nanobanana config path
+```
+
+Alternative sources, in practice:
+
+- `--api-key`
+- `GEMINI_API_KEY`
+- `NANOBANANA_API_KEY`
+- `GOOGLE_API_KEY`
+- local `.env`
+
+The config command is intended to keep the CLI usable even when local project `.env` files are absent or agents run in sandboxes that do not preserve them.
+
 ## Commands
 
 | Command | Description |
@@ -93,6 +152,7 @@ nanobanana <command> --help
 | `transparent inspect` | Inspect transparency details for an image |
 | `combine` | Combine multiple images into one |
 | `version` | Print version information |
+| `config` | Manage persistent user-level configuration |
 | `docs` | Print the full CLI manual |
 
 ## Command Reference
@@ -272,6 +332,30 @@ Usage:
 nanobanana version
 ```
 
+### `config`
+
+Usage:
+
+```bash
+nanobanana config <subcommand>
+```
+
+Subcommands:
+
+- `nanobanana config path`
+- `nanobanana config show`
+- `nanobanana config set-api-key [key]`
+- `nanobanana config clear-api-key`
+
+Examples:
+
+```bash
+nanobanana config set-api-key
+nanobanana config set-api-key YOUR_API_KEY
+nanobanana config show
+nanobanana config clear-api-key
+```
+
 ### `docs`
 
 Usage:
@@ -281,17 +365,6 @@ nanobanana docs
 ```
 
 This prints the full CLI manual for all commands, key flags, model aliases, and examples.
-
-## Authentication
-
-Set your Gemini API key via:
-
-- `GEMINI_API_KEY`
-- `NANOBANANA_API_KEY`
-- `GOOGLE_API_KEY`
-- `--api-key`
-
-Get your API key at [Google AI Studio](https://aistudio.google.com/apikey).
 
 ## JSON Output
 

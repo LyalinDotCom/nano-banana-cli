@@ -9,7 +9,15 @@ Use this skill when the task is to drive the repo's Go CLI instead of calling th
 
 The CLI lives in the current repo and builds to `./nanobanana`.
 
-An API key is required for any Gemini-backed command. Prefer `GEMINI_API_KEY`. The CLI also accepts `NANOBANANA_API_KEY` and `GOOGLE_API_KEY`.
+An API key is required for any Gemini-backed command.
+
+Recommended setup:
+
+```bash
+./nanobanana config set-api-key
+```
+
+The CLI also accepts `GEMINI_API_KEY`, `NANOBANANA_API_KEY`, and `GOOGLE_API_KEY`, but persistent config is better when project-local `.env` files may be missing or sandboxed away.
 
 Default model guidance:
 - Use `banana2` unless the task specifically needs `2.5` or `pro`.
@@ -35,13 +43,19 @@ Default model guidance:
 make build
 ```
 
-2. Use the manual when you need the whole interface in one place:
+2. Configure the API key if needed:
+
+```bash
+./nanobanana config set-api-key
+```
+
+3. Use the manual when you need the whole interface in one place:
 
 ```bash
 ./nanobanana docs
 ```
 
-3. Use command-specific help when needed:
+4. Use command-specific help when needed:
 
 ```bash
 ./nanobanana generate --help
@@ -96,6 +110,7 @@ Scripted multi-turn flow:
 ## Important Constraints
 
 - `banana2` is the default and recommended model.
+- If `nanobanana` is installed via `go install` and not on PATH, the user may need to run `"$(go env GOPATH)/bin/nanobanana"` directly.
 - `--ground-image` is only for Gemini 3.1.
 - Gemini 3.1 supports `512` plus aspect ratios `1:4`, `4:1`, `1:8`, `8:1`.
 - Pro supports `1K`, `2K`, and `4K`, but not `512`.
