@@ -1,5 +1,7 @@
 # Nanobanana CLI
 
+> **⚠️ DEPRECATED:** This repository is no longer maintained. Please use the actively maintained version at **[https://github.com/LyalinDotCom/nanobanana-cli](https://github.com/LyalinDotCom/nanobanana-cli)**.
+
 AI-powered image generation and manipulation CLI for Gemini image models.
 
 > **Note:** This is a personal project and is not actively supported. Pull requests are not accepted. Feel free to [open an issue](https://github.com/lyalindotcom/nano-banana-cli/issues) if you run into something.
