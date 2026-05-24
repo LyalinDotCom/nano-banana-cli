@@ -14,7 +14,8 @@ func TestResolveModelAliases(t *testing.T) {
 	}{
 		{name: "default", input: "", wantID: ModelFlash31},
 		{name: "banana2", input: "banana2", wantID: ModelFlash31},
-		{name: "banana", input: "banana", wantID: ModelFlash25},
+		{name: "nano-banana-2", input: "nano-banana-2", wantID: ModelFlash31},
+		{name: "flash", input: "flash", wantID: ModelFlash31},
 		{name: "pro", input: "pro", wantID: ModelPro},
 	}
 
@@ -28,6 +29,26 @@ func TestResolveModelAliases(t *testing.T) {
 	}
 }
 
+func TestDeprecatedModelsAreBlocked(t *testing.T) {
+	blocked := []string{
+		"banana",
+		"2.5",
+		"flash-2.5",
+		"gemini-2.5-flash-image",
+		"gemini-2.5-flash-image-preview",
+		"models/gemini-2.5-flash-image",
+	}
+
+	for _, model := range blocked {
+		if !IsDeprecatedModel(model) {
+			t.Fatalf("IsDeprecatedModel(%q) = false, want true", model)
+		}
+		if _, err := NewClient("test-key", model, time.Second); err == nil {
+			t.Fatalf("NewClient accepted deprecated model %q", model)
+		}
+	}
+}
+
 func TestValidateOptionsByModel(t *testing.T) {
 	tests := []struct {
 		name    string
@@ -35,18 +56,6 @@ func TestValidateOptionsByModel(t *testing.T) {
 		opts    GenerateOptions
 		wantErr bool
 	}{
-		{
-			name:    "flash25 rejects 2k",
-			model:   "banana",
-			opts:    GenerateOptions{ImageSize: "2K", Count: 1},
-			wantErr: true,
-		},
-		{
-			name:    "flash25 rejects image search",
-			model:   "banana",
-			opts:    GenerateOptions{GroundImage: true, Count: 1},
-			wantErr: true,
-		},
 		{
 			name:  "flash31 accepts 512 and wide ratio",
 			model: "banana2",

@@ -8,7 +8,7 @@ AI-powered image generation and manipulation CLI for Gemini image models.
 
 ## Features
 
-- Generate and edit images with Gemini 2.5, Gemini 3.1, and Gemini 3 Pro image models
+- Generate and edit images with Gemini 3.1 Flash Image Preview and Gemini 3 Pro image models
 - Use one or many reference images in a single prompt
 - Ground image generation with Google Search, including Google Image Search on Gemini 3.1
 - Save and resume scripted multi-turn image workflows with history files
@@ -67,9 +67,6 @@ nanobanana docs
 # Default model: Nano Banana 2 / Gemini 3.1 Flash Image Preview
 nanobanana generate "a robot playing guitar" -o robot.png
 
-# Use Gemini 2.5 Flash Image explicitly
-nanobanana generate "a product icon" -m banana -o icon.png
-
 # Use Gemini 3 Pro at 4K
 nanobanana generate "designer perfume bottle" -m pro --image-size 4K -o bottle.png
 
@@ -104,9 +101,10 @@ The CLI accepts aliases or raw Google model IDs.
 
 | Alias | Model ID | Notes |
 | --- | --- | --- |
-| `banana2` (default), `3.1` | `gemini-3.1-flash-image-preview` | Recommended default, supports `512`, extra aspect ratios, grounding, thought controls |
-| `banana`, `2.5` | `gemini-2.5-flash-image` | Fast Nano Banana model for lower-latency runs |
+| `banana2` (default), `nano-banana-2`, `flash`, `3.1` | `gemini-3.1-flash-image-preview` | Recommended default, supports `512`, extra aspect ratios, grounding, thought controls |
 | `pro` | `gemini-3-pro-image-preview` | Best for professional asset production and 4K output |
+
+Gemini 2.5 image models are deprecated for this project and blocked. Do not use `banana`, `2.5`, `flash-2.5`, `gemini-2.5-flash-image`, or `gemini-2.5-flash-image-preview`.
 
 ## Documentation and Discovery
 

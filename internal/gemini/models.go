@@ -7,7 +7,9 @@ import (
 )
 
 const (
-	ModelFlash25   = "gemini-2.5-flash-image"
+	// Deprecated: Gemini 2.5 image models must not be used in this project.
+	ModelFlash25 = "gemini-2.5-flash-image"
+
 	ModelFlash31   = "gemini-3.1-flash-image-preview"
 	ModelPro       = "gemini-3-pro-image-preview"
 	DefaultModelID = ModelFlash31
@@ -61,17 +63,9 @@ var (
 	allImageSizes = []string{"512", "1K", "2K", "4K"}
 
 	modelsByID = map[string]ModelSpec{
-		ModelFlash25: {
-			ID:                    ModelFlash25,
-			Aliases:               []string{"banana", "2.5"},
-			DefaultImageSize:      "1K",
-			SupportedAspectRatios: standardAspectRatios,
-			SupportedImageSizes:   []string{"1K"},
-			MaxInputImages:        3,
-		},
 		ModelFlash31: {
 			ID:                    ModelFlash31,
-			Aliases:               []string{"banana2", "3.1"},
+			Aliases:               []string{"banana2", "nano-banana-2", "flash", "3.1", "flash-3.1"},
 			DefaultImageSize:      "1K",
 			SupportedAspectRatios: flash31AspectRatios,
 			SupportedImageSizes:   allImageSizes,
@@ -119,6 +113,9 @@ func ResolveModel(name string) ValidatedModel {
 	if normalized == "" {
 		return ValidatedModel{Spec: modelsByID[DefaultModelID], Alias: "banana2"}
 	}
+	if IsDeprecatedModel(normalized) {
+		return ValidatedModel{Spec: modelsByID[DefaultModelID], Alias: normalized}
+	}
 
 	if id, ok := aliasToModelID[normalized]; ok {
 		return ValidatedModel{Spec: modelsByID[id], Alias: normalized}
@@ -143,10 +140,18 @@ func ResolveModel(name string) ValidatedModel {
 
 func ListModelAliases() []string {
 	return []string{
-		"banana2 (default), 3.1",
-		"banana, 2.5",
+		"banana2 (default), nano-banana-2, flash, 3.1",
 		"pro",
 	}
+}
+
+func IsDeprecatedModel(name string) bool {
+	normalized := strings.TrimSpace(strings.ToLower(strings.TrimPrefix(name, "models/")))
+	return normalized == "banana" ||
+		normalized == "2.5" ||
+		normalized == "flash-2.5" ||
+		normalized == ModelFlash25 ||
+		strings.Contains(normalized, "2.5")
 }
 
 func ListAllAspectRatios() []string {

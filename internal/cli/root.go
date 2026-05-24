@@ -39,9 +39,9 @@ CAPABILITIES:
   - Image combining: horizontal strips, vertical strips, grids
 
 MODELS:
-  - banana2 (default): Gemini 3.1 Flash Image Preview
-  - banana / 2.5: Gemini 2.5 Flash Image
+  - banana2 (default), nano-banana-2, flash, 3.1: Gemini 3.1 Flash Image Preview
   - pro: Gemini 3 Pro Image Preview
+  - Gemini 2.5 image models are deprecated for this project and blocked.
 
 AUTHENTICATION:
   Set your Gemini API key via:

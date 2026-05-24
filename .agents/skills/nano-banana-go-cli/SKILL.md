@@ -1,6 +1,6 @@
 ---
 name: nano-banana-go-cli
-description: Use when you need the repo's Go Nano Banana CLI for Gemini image generation or editing, including model selection across Gemini 2.5, Gemini 3.1, and Pro, multi-image references, Google Search grounding, thought output, and scripted multi-turn history files.
+description: Use when you need the repo's Go Nano Banana CLI for Gemini image generation or editing, including model selection across Gemini 3.1 and Pro, multi-image references, Google Search grounding, thought output, and scripted multi-turn history files.
 ---
 
 # Nano Banana Go CLI
@@ -20,10 +20,10 @@ Recommended setup:
 The CLI also accepts `GEMINI_API_KEY`, `NANOBANANA_API_KEY`, and `GOOGLE_API_KEY`, but persistent config is better when project-local `.env` files may be missing or sandboxed away.
 
 Default model guidance:
-- Use `banana2` unless the task specifically needs `2.5` or `pro`.
-- `banana2` / `3.1` -> `gemini-3.1-flash-image-preview`
-- `banana` / `2.5` -> `gemini-2.5-flash-image`
+- Use `banana2` unless the task specifically needs `pro`.
+- `banana2` / `nano-banana-2` / `flash` / `3.1` -> `gemini-3.1-flash-image-preview`
 - `pro` -> `gemini-3-pro-image-preview`
+- Gemini 2.5 image models and aliases are deprecated for this project and blocked.
 
 ## What It Enables
 
@@ -114,6 +114,6 @@ Scripted multi-turn flow:
 - `--ground-image` is only for Gemini 3.1.
 - Gemini 3.1 supports `512` plus aspect ratios `1:4`, `4:1`, `1:8`, `8:1`.
 - Pro supports `1K`, `2K`, and `4K`, but not `512`.
-- Gemini 2.5 behaves like fixed `1K`; do not expect `512`, `2K`, or `4K`.
+- Do not use `banana`, `2.5`, `flash-2.5`, `gemini-2.5-flash-image`, or `gemini-2.5-flash-image-preview`.
 - History files are for scripted automation, not an interactive chat UI.
 - When grounded image search is used, preserve containing-page source URLs from JSON output for attribution.

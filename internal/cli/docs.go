@@ -34,10 +34,10 @@ Installation and first run:
     Or add "$(go env GOPATH)/bin" to PATH.
 
 Models:
-  banana2, 3.1 -> gemini-3.1-flash-image-preview
-  banana, 2.5  -> gemini-2.5-flash-image
-  pro          -> gemini-3-pro-image-preview
-  Raw model IDs are also accepted.
+  banana2, nano-banana-2, flash, 3.1 -> gemini-3.1-flash-image-preview
+  pro                                  -> gemini-3-pro-image-preview
+  Deprecated and blocked: banana, 2.5, flash-2.5, gemini-2.5-flash-image, gemini-2.5-flash-image-preview
+  Raw non-deprecated model IDs are also accepted.
 
 Commands:
 

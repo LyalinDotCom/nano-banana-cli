@@ -52,9 +52,9 @@ PROMPT INPUT:
   - From stdin: nanobanana generate -o out.png < prompt.txt
 
 MODELS:
-  - banana2 (default): Gemini 3.1 Flash Image Preview
-  - banana / 2.5: Gemini 2.5 Flash Image
+  - banana2 (default), nano-banana-2, flash, 3.1: Gemini 3.1 Flash Image Preview
   - pro: Gemini 3 Pro Image Preview
+  - Gemini 2.5 image models are deprecated for this project and blocked.
 
 ASPECT RATIOS:
   Standard: 1:1, 3:2, 2:3, 3:4, 4:3, 4:5, 5:4, 9:16, 16:9, 21:9
@@ -63,7 +63,6 @@ ASPECT RATIOS:
 IMAGE SIZES:
   Gemini 3.1: 512, 1K, 2K, 4K
   Gemini 3 Pro: 1K, 2K, 4K
-  Gemini 2.5: fixed 1K behavior
 
 EXAMPLES:
   # Generate a simple image
@@ -184,7 +183,11 @@ func runGenerate(cmd *cobra.Command, args []string) error {
 
 	client, err := gemini.NewClient(apiKey, GetModel(), 3*time.Minute)
 	if err != nil {
-		f.Error("generate", "CLIENT_ERROR", err.Error(), "Check your API key")
+		if geminiErr, ok := err.(*gemini.GeminiError); ok {
+			f.Error("generate", geminiErr.Code, geminiErr.Message, "Use banana2, nano-banana-2, flash, 3.1, or pro")
+		} else {
+			f.Error("generate", "CLIENT_ERROR", err.Error(), "Check your API key")
+		}
 		return err
 	}
 	modelInfo := client.Model()

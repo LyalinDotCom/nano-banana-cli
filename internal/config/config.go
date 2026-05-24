@@ -115,14 +115,16 @@ func GetAPIKey() string {
 }
 
 func ResolveModel(model string) string {
-	switch model {
-	case "", "banana2", "3.1":
+	normalized := strings.TrimSpace(strings.ToLower(strings.TrimPrefix(model, "models/")))
+	switch normalized {
+	case "", "banana2", "nano-banana-2", "flash", "3.1", "flash-3.1":
 		return DefaultModel
-	case "banana", "2.5":
-		return "gemini-2.5-flash-image"
 	case "pro":
 		return ProModel
 	default:
+		if normalized == "banana" || strings.Contains(normalized, "2.5") {
+			return DefaultModel
+		}
 		return model
 	}
 }

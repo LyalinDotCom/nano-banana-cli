@@ -125,7 +125,11 @@ func runIcon(cmd *cobra.Command, args []string) error {
 
 	client, err := gemini.NewClient(apiKey, GetModel(), 2*time.Minute)
 	if err != nil {
-		f.Error("icon", "CLIENT_ERROR", err.Error(), "Check your API key")
+		if geminiErr, ok := err.(*gemini.GeminiError); ok {
+			f.Error("icon", geminiErr.Code, geminiErr.Message, "Use banana2, nano-banana-2, flash, 3.1, or pro")
+		} else {
+			f.Error("icon", "CLIENT_ERROR", err.Error(), "Check your API key")
+		}
 		return err
 	}
 	modelInfo := client.Model()

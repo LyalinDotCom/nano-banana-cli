@@ -185,6 +185,12 @@ func NewClient(apiKey, model string, timeout time.Duration) (*Client, error) {
 	if strings.TrimSpace(apiKey) == "" {
 		return nil, fmt.Errorf("API key is required")
 	}
+	if IsDeprecatedModel(model) {
+		return nil, &GeminiError{
+			Code:    ErrInvalidInput,
+			Message: fmt.Sprintf("deprecated model is blocked: %s", strings.TrimSpace(model)),
+		}
+	}
 	if timeout <= 0 {
 		timeout = 2 * time.Minute
 	}
